@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import env from '#start/env'
 
-export default class UsuariosController {
+class UsuariosController {
   async registrar({ request, response }: HttpContext) {
     const { nombre, correo, contrasena, rol } = request.body()
     console.log('VALORES DESTRUCTURADOS:', { nombre, correo, contrasena, rol })
@@ -49,8 +49,8 @@ export default class UsuariosController {
     // Devolver token en header y en body
     response.cookie('token', token, {
       httpOnly: true, // protege contra JS en el navegador
-      sameSite: 'lax', // evita CSRF básicos
-      secure: false, // en producción ponlo en true (HTTPS)
+      sameSite: 'lax', // evita CSRF básicos -- /consultar massss sobre esto///
+      secure: false, // estico toca ponerlo en true  oseaaaaaaa(HTTPS)
       maxAge: 60 * 60 * 24 * 7, // 7 días
     })
 
@@ -65,6 +65,23 @@ export default class UsuariosController {
     return jwt.sign(payload, secret as string, { expiresIn: '7d' })
   }
 
-  yo() {}
-  cerrar() {}
+  yo({ request, response }): HttpContext {
+    const usuario = (request as any).usuario
+    if (!usuario) {
+      return response.json({ mensaje: 'No autenticado' })
+    } else {
+      return response.json({ usuario })
+    }
+  }
+  cerrar({ response }) {
+    response.clearCookie('token', {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+      path: '/',
+    })
+    return response.json({ mensaje: 'Sesión cerrada' })
+  }
 }
+
+export default UsuariosController
